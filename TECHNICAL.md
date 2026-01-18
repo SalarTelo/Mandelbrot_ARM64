@@ -29,7 +29,7 @@ In practice, we test for divergence by checking if `|z|² > 4` (escape radius).
   - `d6`: Constant 4.0 (escape radius squared)
   - `d7`: z_real² (temporary)
   - `d8`: z_imag² (temporary)
-  - `d9`: max_iter (saved from w0)
+  - `w9`: max_iter (saved from w0)
   - `d10`: z_real² + z_imag² (magnitude squared)
   - `d11`: Temporary for calculations
 
@@ -44,12 +44,15 @@ For complex numbers `z = a + bi` and `c = x + yi`:
 
 This is implemented as:
 ```assembly
-fmul    d7, d4, d4      // a²
-fmul    d8, d5, d5      // b²
-fsub    d4, d7, d8      // new real = a² - b²
+fmul    d7, d4, d4      // a² (z_real²)
+fmul    d8, d5, d5      // b² (z_imag²)
+// Calculate new imaginary part first (before modifying d4, d5)
 fmul    d11, d4, d5     // a * b
 fadd    d11, d11, d11   // 2ab
-fmov    d5, d11         // new imag = 2ab
+fadd    d5, d11, d3     // new imag = 2ab + c_imag
+// Now calculate new real part
+fsub    d4, d7, d8      // new real = a² - b²
+fadd    d4, d4, d2      // new real = a² - b² + c_real
 ```
 
 **Addition:** `z² + c = (a² - b² + x) + (2ab + y)i`
